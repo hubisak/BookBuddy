@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <!-- ═══════════════════════════════════
+       META & PWA
+  ═══════════════════════════════════ -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0a0e1a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="BookBuddy" />
+  <meta name="description" content="Tvoje kapesní knihovna — ukládej, hledej a sleduj své čtení." />
+
+  <title>BookBuddy</title>
+
+  <link rel="manifest" href="manifest.json" />
+
+  <!-- ═══════════════════════════════════
+       STYLESHEET
+  ═══════════════════════════════════ -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+
+  <!-- ═══════════════════════════════════════════
+       SPLASH SCREEN
+  ═══════════════════════════════════════════ -->
+  <div id="splash">
+    <div class="splash-logo">Book<em>Buddy</em></div>
+    <div class="splash-tag">Tvoje kapesní knihovna 📚</div>
+    <div class="splash-ring"></div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       SCREEN: HOME / PŘEHLED
+  ═══════════════════════════════════════════ -->
+  <section class="screen active" id="screen-home" aria-label="Přehled">
+
+    <header class="header">
+      <div class="logo">Book<em>Buddy</em></div>
+      <div class="header-actions">
+        <button class="icon-btn" id="theme-toggle" onclick="toggleTheme()" title="Přepnout téma" aria-label="Přepnout světlý/tmavý režim">
+          ☀️
+        </button>
+      </div>
+    </header>
+
+    <div class="scroll-content">
+
+      <!-- Stats cards -->
+      <div id="stats-grid" class="stats-grid"></div>
+
+      <!-- Currently reading -->
+      <div id="home-reading"></div>
+
+      <!-- AI Recommendations -->
+      <div id="home-recs"></div>
+
+      <!-- Recently added -->
+      <div id="home-recent"></div>
+
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════
+       SCREEN: MOJE KNIHY / KNIHOVNA
+  ═══════════════════════════════════════════ -->
+  <section class="screen" id="screen-library" aria-label="Moje knihy">
+
+    <header class="header">
+      <div class="logo">Moje <em>knihy</em></div>
+      <div class="header-actions">
+        <button class="icon-btn" onclick="openAddManual()" title="Přidat ručně" aria-label="Přidat knihu ručně">＋</button>
+      </div>
+    </header>
+
+    <div class="scroll-content">
+
+      <!-- Filter tabs -->
+      <div class="filter-tabs" id="lib-tabs" role="tablist">
+        <button class="filter-tab active" role="tab" onclick="setLibFilter('all', this)">Vše</button>
+        <button class="filter-tab" role="tab" onclick="setLibFilter('reading', this)">📖 Čtu</button>
+        <button class="filter-tab" role="tab" onclick="setLibFilter('read', this)">✓ Přečteno</button>
+        <button class="filter-tab" role="tab" onclick="setLibFilter('want', this)">🔖 Chci číst</button>
+      </div>
+
+      <!-- Sort & count row -->
+      <div class="sort-row">
+        <span id="lib-count" class="result-count"></span>
+        <select class="sort-select" onchange="setLibSort(this.value)" aria-label="Řadit podle">
+          <option value="added">Nejnovější</option>
+          <option value="title">Abecedně</option>
+          <option value="rating">Hodnocení</option>
+        </select>
+      </div>
+
+      <!-- Book list -->
+      <div id="library-list"></div>
+
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════
+       SCREEN: HLEDAT
+  ═══════════════════════════════════════════ -->
+  <section class="screen" id="screen-search" aria-label="Hledat knihy">
+
+    <header class="header">
+      <div class="logo"><em>Hledat</em> knihy</div>
+    </header>
+
+    <div class="scroll-content">
+
+      <!-- Search input -->
+      <div class="search-wrap" role="search">
+        <input
+          type="text"
+          id="search-input"
+          placeholder="Název, autor, žánr…"
+          autocomplete="off"
+          autocorrect="off"
+          spellcheck="false"
+          aria-label="Hledat knihy"
+        />
+        <button class="search-btn" onclick="doSearch()" aria-label="Spustit hledání">🔍</button>
+        <!-- Sem JavaScript průběžně vykresluje krátké návrhy při psaní do hledání. -->
+        <div id="search-suggestions" class="search-suggestions" aria-label="Našeptávání hledání"></div>
+      </div>
+
+      <!-- Quick genre chips -->
+      <p style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:8px">
+        Oblíbené žánry
+      </p>
+      <div id="genre-chips" style="margin-bottom:20px"></div>
+
+      <!-- Search results -->
+      <div id="search-results"></div>
+
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════
+       SCREEN: PROFIL
+  ═══════════════════════════════════════════ -->
+  <section class="screen" id="screen-profile" aria-label="Profil">
+
+    <header class="header">
+      <div class="logo">Můj <em>profil</em></div>
+    </header>
+
+    <div class="scroll-content">
+
+      <!-- Avatar & name -->
+      <div style="text-align:center; padding: 8px 0 20px">
+        <div class="profile-avatar">📖</div>
+        <div id="profile-name" style="font-family:'Fraunces',serif;font-size:22px;font-weight:700;margin-bottom:4px"></div>
+        <div id="profile-stats" style="font-size:13px;color:var(--text-muted)"></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Settings form -->
+      <p style="font-family:'Fraunces',serif;font-size:17px;font-weight:700;margin-bottom:16px">Nastavení</p>
+
+      <label class="form-label" for="pref-name">Jméno čtenáře</label>
+      <input class="form-input" type="text" id="pref-name" placeholder="Tvoje jméno" />
+
+      <label class="form-label" for="pref-genre">Oblíbený žánr</label>
+      <select class="form-select" id="pref-genre">
+      </select>
+
+      <label class="form-label" for="pref-goal">Roční cíl (počet knih)</label>
+      <input class="form-input" type="number" id="pref-goal" placeholder="12" min="1" max="365" />
+
+      <button class="btn btn-primary" onclick="saveProfile()">Uložit profil</button>
+
+      <div class="divider"></div>
+
+      <!-- Genre breakdown chart -->
+      <p style="font-family:'Fraunces',serif;font-size:17px;font-weight:700;margin-bottom:14px">Statistika žánrů</p>
+      <div id="genre-breakdown"></div>
+
+      <div class="divider"></div>
+
+      <!-- App info -->
+      <div style="text-align:center; padding: 4px 0 8px">
+        <p style="font-size:12px;color:var(--text-muted)">BookBuddy v1.0 · Data uložena lokálně 🔒</p>
+        <p style="font-size:11px;color:var(--text-muted);margin-top:4px">Přidáno jako PWA: funguje offline</p>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════
+       BOTTOM NAVIGATION
+  ═══════════════════════════════════════════ -->
+  <nav class="bottom-nav" aria-label="Hlavní navigace">
+    <button class="nav-item active" onclick="showScreen('home', this)" aria-label="Přehled">
+      <span class="nav-icon">🏠</span>
+      Přehled
+    </button>
+    <button class="nav-item" onclick="showScreen('library', this)" aria-label="Moje knihy">
+      <span class="nav-icon">📚</span>
+      Knihovna
+    </button>
+    <button class="nav-item" onclick="showScreen('search', this)" aria-label="Hledat">
+      <span class="nav-icon">🔍</span>
+      Hledat
+    </button>
+    <button class="nav-item" onclick="showScreen('profile', this)" aria-label="Profil">
+      <span class="nav-icon">👤</span>
+      Profil
+    </button>
+  </nav>
+
+
+  <!-- ═══════════════════════════════════════════
+       TOAST NOTIFICATION
+  ═══════════════════════════════════════════ -->
+  <div id="toast" role="status" aria-live="polite"></div>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       OVERLAY: BOOK DETAIL SHEET
+  ═══════════════════════════════════════════════════ -->
+  <div class="overlay" id="overlay-detail" onclick="overlayClick(event, 'overlay-detail')" role="dialog" aria-modal="true" aria-label="Detail knihy">
+    <div class="sheet" id="sheet-detail">
+      <div class="sheet-handle"></div>
+      <div id="sheet-detail-content"></div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       OVERLAY: ADD BOOK MANUALLY
+  ═══════════════════════════════════════════════════ -->
+  <div class="overlay" id="overlay-add" onclick="overlayClick(event, 'overlay-add')" role="dialog" aria-modal="true" aria-label="Přidat knihu ručně">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">Přidat knihu ručně</div>
+      <div class="sheet-body">
+
+        <label class="form-label" for="add-title">Název *</label>
+        <input class="form-input" type="text" id="add-title" placeholder="Název knihy" />
+
+        <label class="form-label" for="add-author">Autor</label>
+        <input class="form-input" type="text" id="add-author" placeholder="Jméno autora" />
+
+        <label class="form-label" for="add-genre">Žánr</label>
+        <select class="form-select" id="add-genre">
+        </select>
+
+        <label class="form-label">Hodnocení</label>
+        <div class="star-row" id="add-stars">
+          <button class="star-btn" onclick="setAddStar(1)" aria-label="1 hvězda">★</button>
+          <button class="star-btn" onclick="setAddStar(2)" aria-label="2 hvězdy">★</button>
+          <button class="star-btn" onclick="setAddStar(3)" aria-label="3 hvězdy">★</button>
+          <button class="star-btn" onclick="setAddStar(4)" aria-label="4 hvězdy">★</button>
+          <button class="star-btn" onclick="setAddStar(5)" aria-label="5 hvězd">★</button>
+        </div>
+
+        <label class="form-label" for="add-status">Status</label>
+        <select class="form-select" id="add-status">
+          <option value="want">🔖 Chci číst</option>
+          <option value="reading">📖 Právě čtu</option>
+          <option value="read">✓ Přečteno</option>
+        </select>
+
+        <label class="form-label" for="add-note">Poznámka</label>
+        <textarea class="form-textarea" id="add-note" placeholder="Dojmy, co tě zaujalo…"></textarea>
+
+        <button class="btn btn-primary" onclick="saveManualBook()">Přidat do knihovny</button>
+        <button class="btn btn-secondary" onclick="closeOverlay('overlay-add')">Zrušit</button>
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════
+       SERVICE WORKER & SCRIPT
+  ═══════════════════════════════════ -->
+  <script>
+    // Register PWA Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(err => {
+        console.warn('SW registration failed:', err);
+      });
+    }
+  </script>
+
+  <!-- Hlavní logika aplikace: práce s daty, API i ovládáním obrazovek. -->
+  <script src="app.js"></script>
+
+</body>
+</html>
