@@ -1,11 +1,4 @@
-/* ============================================================
-   BOOKBUDDY — sw.js
-   Service Worker: caches app shell for offline use
-   Strategy:
-   - App shell: cache-first
-   - Google Fonts: network-first with cache fallback
-   - Open Library API + Covers API: síť bez fake fallbacku
-   ============================================================ */
+
 
 const CACHE_NAME = 'bookbuddy-openlibrary-v2';
 
